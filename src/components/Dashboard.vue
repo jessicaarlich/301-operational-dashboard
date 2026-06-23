@@ -279,14 +279,14 @@ const metricCards = computed(() => {
     const totalOvertime = Math.round(data.reduce((sum, d) => sum + d.totalOvertimeHours, 0))
 
     return [
-      getMetricCard('Avg Patient Visits', avgTotalVisits),
-      getMetricCard('Avg ED Visits', avgEdVisits),
-      getMetricCard('Avg Admissions', avgAdmissions),
-      getMetricCard('Avg Bed Occupancy', avgOccupancy, '%'),
-      getMetricCard('Avg ED Wait Time', avgWaitTime, 'min'),
-      getMetricCard('Avg Staff Count', avgStaff),
-      getMetricCard('Avg Vacancy Rate', avgVacancy, '%'),
-      getMetricCard('Total Overtime Hours', totalOvertime),
+      getMetricCard('Patient Visits (Avg/Month)', avgTotalVisits),
+      getMetricCard('ED Visits (Avg/Month)', avgEdVisits),
+      getMetricCard('Admissions (Avg/Month)', avgAdmissions),
+      getMetricCard('Bed Occupancy (Avg Monthly Rate)', avgOccupancy, '%'),
+      getMetricCard('ED Wait Time (Avg Monthly)', avgWaitTime, 'min'),
+      getMetricCard('Staff Count (Avg/Month)', avgStaff),
+      getMetricCard('Vacancy Rate (Avg Monthly)', avgVacancy, '%'),
+      getMetricCard('Overtime Hours (2025 Total)', totalOvertime),
     ]
   } else {
     // Show selected month data
@@ -305,14 +305,14 @@ const metricCards = computed(() => {
       ]
     }
     return [
-      getMetricCard('Total Patient Visits', data.totalPatientVisits),
-      getMetricCard('ED Visits', data.emergencyDepartmentVisits),
-      getMetricCard('Inpatient Admissions', data.inpatientAdmissions),
-      getMetricCard('Bed Occupancy', data.overallBedOccupancyRate, '%'),
-      getMetricCard('ED Wait Time', data.averageEdWaitTimeMinutes, 'min'),
-      getMetricCard('Staff Count', data.totalStaffCount),
-      getMetricCard('Vacancy Rate', data.vacancyRate, '%'),
-      getMetricCard('Overtime Hours', data.totalOvertimeHours),
+      getMetricCard('Patient Visits (Month Total)', data.totalPatientVisits),
+      getMetricCard('ED Visits (Month Total)', data.emergencyDepartmentVisits),
+      getMetricCard('Inpatient Admissions (Month Total)', data.inpatientAdmissions),
+      getMetricCard('Bed Occupancy (Monthly Rate)', data.overallBedOccupancyRate, '%'),
+      getMetricCard('ED Wait Time (Monthly Avg)', data.averageEdWaitTimeMinutes, 'min'),
+      getMetricCard('Staff Count (Month Snapshot)', data.totalStaffCount),
+      getMetricCard('Vacancy Rate (Monthly Rate)', data.vacancyRate, '%'),
+      getMetricCard('Overtime Hours (Month Total)', data.totalOvertimeHours),
     ]
   }
 })
@@ -350,6 +350,9 @@ const metricCards = computed(() => {
             <h1 class="text-h4 font-weight-bold mb-2">Dashboard Overview</h1>
             <p class="text-subtitle1">
               Viewing: <strong>{{ monthLabels[selectedMonth as keyof typeof monthLabels] }}</strong>
+            </p>
+            <p class="text-caption text-grey mt-1">
+              Timeframe: metrics are monthly by default. In "All Months (2025)", values are average per month unless labeled as a yearly total.
             </p>
           </v-col>
         </v-row>
