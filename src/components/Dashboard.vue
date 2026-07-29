@@ -265,55 +265,102 @@ const getMetricCard = (label: string, value: string | number, unit: string = '')
   unit,
 })
 
-const metricCards = computed(() => {
+// Demand & Stress Signals
+const demandCards = computed(() => {
   if (selectedMonth.value === 'ALL') {
-    // Calculate averages for all months
     const data = allData.value
     const avgTotalVisits = Math.round(data.reduce((sum, d) => sum + d.totalPatientVisits, 0) / data.length)
     const avgEdVisits = Math.round(data.reduce((sum, d) => sum + d.emergencyDepartmentVisits, 0) / data.length)
-    const avgAdmissions = Math.round(data.reduce((sum, d) => sum + d.inpatientAdmissions, 0) / data.length)
-    const avgOccupancy = (data.reduce((sum, d) => sum + d.overallBedOccupancyRate, 0) / data.length).toFixed(1)
     const avgWaitTime = Math.round(data.reduce((sum, d) => sum + d.averageEdWaitTimeMinutes, 0) / data.length)
-    const avgStaff = Math.round(data.reduce((sum, d) => sum + d.totalStaffCount, 0) / data.length)
-    const avgVacancy = (data.reduce((sum, d) => sum + d.vacancyRate, 0) / data.length).toFixed(1)
-    const totalOvertime = Math.round(data.reduce((sum, d) => sum + d.totalOvertimeHours, 0))
 
     return [
       getMetricCard('Patient Visits (Avg/Month)', avgTotalVisits),
       getMetricCard('ED Visits (Avg/Month)', avgEdVisits),
-      getMetricCard('Admissions (Avg/Month)', avgAdmissions),
-      getMetricCard('Bed Occupancy (Avg Monthly Rate)', avgOccupancy, '%'),
       getMetricCard('ED Wait Time (Avg Monthly)', avgWaitTime, 'min'),
-      getMetricCard('Staff Count (Avg/Month)', avgStaff),
-      getMetricCard('Vacancy Rate (Avg Monthly)', avgVacancy, '%'),
-      getMetricCard('Overtime Hours (2025 Total)', totalOvertime),
     ]
   } else {
-    // Show selected month data
     const data = selectedMonthData.value
     if (!data) {
-      // Return empty cards with dashes if data not found (shouldn't happen)
       return [
         getMetricCard('Total Patient Visits', '—'),
         getMetricCard('ED Visits', '—'),
-        getMetricCard('Inpatient Admissions', '—'),
-        getMetricCard('Bed Occupancy', '—', '%'),
         getMetricCard('ED Wait Time', '—', 'min'),
-        getMetricCard('Staff Count', '—'),
-        getMetricCard('Vacancy Rate', '—', '%'),
-        getMetricCard('Overtime Hours', '—'),
       ]
     }
     return [
       getMetricCard('Patient Visits (Month Total)', data.totalPatientVisits),
       getMetricCard('ED Visits (Month Total)', data.emergencyDepartmentVisits),
-      getMetricCard('Inpatient Admissions (Month Total)', data.inpatientAdmissions),
-      getMetricCard('Bed Occupancy (Monthly Rate)', data.overallBedOccupancyRate, '%'),
       getMetricCard('ED Wait Time (Monthly Avg)', data.averageEdWaitTimeMinutes, 'min'),
+    ]
+  }
+})
+
+// Capacity & Staffing Levers (with staff-to-patient ratio prominent)
+const capacityCards = computed(() => {
+  if (selectedMonth.value === 'ALL') {
+    const data = allData.value
+    const avgOccupancy = (data.reduce((sum, d) => sum + d.overallBedOccupancyRate, 0) / data.length).toFixed(1)
+    const avgStaff = Math.round(data.reduce((sum, d) => sum + d.totalStaffCount, 0) / data.length)
+    const avgNursingStaff = Math.round(data.reduce((sum, d) => sum + d.nursingStaffCount, 0) / data.length)
+
+    return [
+      getMetricCard('Bed Occupancy (Avg Monthly Rate)', avgOccupancy, '%'),
+      getMetricCard('Staff Count (Avg/Month)', avgStaff),
+      getMetricCard('Nursing Staff (Avg/Month)', avgNursingStaff),
+    ]
+  } else {
+    const data = selectedMonthData.value
+    if (!data) {
+      return [
+        getMetricCard('Bed Occupancy', '—', '%'),
+        getMetricCard('Staff Count', '—'),
+        getMetricCard('Nursing Staff', '—'),
+      ]
+    }
+    return [
+      getMetricCard('Bed Occupancy (Monthly Rate)', data.overallBedOccupancyRate, '%'),
       getMetricCard('Staff Count (Month Snapshot)', data.totalStaffCount),
+      getMetricCard('Nursing Staff (Month Snapshot)', data.nursingStaffCount),
+    ]
+  }
+})
+
+// Strain Indicators
+const strainCards = computed(() => {
+  if (selectedMonth.value === 'ALL') {
+    const data = allData.value
+    const avgVacancy = (data.reduce((sum, d) => sum + d.vacancyRate, 0) / data.length).toFixed(1)
+    const totalOvertime = Math.round(data.reduce((sum, d) => sum + d.totalOvertimeHours, 0))
+
+    return [
+      getMetricCard('Vacancy Rate (Avg Monthly)', avgVacancy, '%'),
+      getMetricCard('Overtime Hours (2025 Total)', totalOvertime),
+    ]
+  } else {
+    const data = selectedMonthData.value
+    if (!data) {
+      return [
+        getMetricCard('Vacancy Rate', '—', '%'),
+        getMetricCard('Overtime Hours', '—'),
+      ]
+    }
+    return [
       getMetricCard('Vacancy Rate (Monthly Rate)', data.vacancyRate, '%'),
       getMetricCard('Overtime Hours (Month Total)', data.totalOvertimeHours),
     ]
+  }
+})
+
+// Prominent Staff-to-Patient Ratio
+const staffRatioMetric = computed(() => {
+  if (selectedMonth.value === 'ALL') {
+    const data = allData.value
+    const avgStaffRatio = (data.reduce((sum, d) => sum + d.staffToPatientRatio, 0) / data.length).toFixed(2)
+    return avgStaffRatio
+  } else {
+    const data = selectedMonthData.value
+    if (!data) return '—'
+    return data.staffToPatientRatio.toFixed(2)
   }
 })
 </script>
@@ -357,17 +404,21 @@ const metricCards = computed(() => {
           </v-col>
         </v-row>
 
-        <!-- Key Metrics Cards -->
+        <!-- SECTION 1: Demand & Stress Signals -->
+        <v-row class="mb-2">
+          <v-col cols="12">
+            <h2 class="text-subtitle1 font-weight-bold text-grey mb-3">Demand & Stress Signals</h2>
+          </v-col>
+        </v-row>
         <v-row class="mb-6">
           <v-col
-            v-for="(card, index) in metricCards"
-            :key="index"
+            v-for="(card, index) in demandCards"
+            :key="`demand-${index}`"
             cols="12"
             sm="6"
             md="4"
-            lg="3"
           >
-            <v-card class="metric-card" elevation="1">
+            <v-card class="metric-card signal-card" elevation="1">
               <div class="pa-4">
                 <div class="text-caption text-grey">{{ card.label }}</div>
                 <div class="text-h6 font-weight-bold mt-2">
@@ -378,7 +429,7 @@ const metricCards = computed(() => {
           </v-col>
         </v-row>
 
-        <!-- Charts Row 1: Patient Volume and Bed Occupancy -->
+        <!-- CHARTS ROW 1: Signal Indicators (Patient Volume + Wait Times) -->
         <v-row class="mb-6">
           <v-col cols="12" md="6">
             <v-card class="chart-card" elevation="1">
@@ -391,20 +442,56 @@ const metricCards = computed(() => {
           <v-col cols="12" md="6">
             <v-card class="chart-card" elevation="1">
               <div class="pa-4">
-                <h3 class="text-h6 font-weight-bold mb-4">Bed Occupancy Rates</h3>
-                <Bar :key="`bo-${selectedMonth}`" :data="bedOccupancyChartData" :options="chartOptions" />
+                <h3 class="text-h6 font-weight-bold mb-4">Wait Times</h3>
+                <Bar :key="`wt-${selectedMonth}`" :data="waitTimesChartData" :options="chartOptions" />
               </div>
             </v-card>
           </v-col>
         </v-row>
 
-        <!-- Charts Row 2: Wait Times and Staffing -->
-        <v-row>
+        <!-- SECTION 2: Capacity & Staffing Levers (with prominent Staff-to-Patient Ratio) -->
+        <v-row class="mb-2">
+          <v-col cols="12">
+            <h2 class="text-subtitle1 font-weight-bold text-grey mb-3">Capacity & Staffing Levers</h2>
+          </v-col>
+        </v-row>
+        <v-row class="mb-6">
+          <!-- Prominent Staff-to-Patient Ratio -->
+          <v-col cols="12" sm="6" md="4">
+            <v-card class="metric-card lever-card prominent-card" elevation="2">
+              <div class="pa-4">
+                <div class="text-caption text-grey">Staff-to-Patient Ratio</div>
+                <div class="text-h4 font-weight-bold mt-3 lever-highlight">{{ staffRatioMetric }}</div>
+                <div class="text-caption text-grey mt-2">← Staff per patient</div>
+              </div>
+            </v-card>
+          </v-col>
+          <!-- Other Capacity Cards -->
+          <v-col
+            v-for="(card, index) in capacityCards"
+            :key="`capacity-${index}`"
+            cols="12"
+            sm="6"
+            md="4"
+          >
+            <v-card class="metric-card lever-card" elevation="1">
+              <div class="pa-4">
+                <div class="text-caption text-grey">{{ card.label }}</div>
+                <div class="text-h6 font-weight-bold mt-2">
+                  {{ card.value }}<span class="text-caption ml-1">{{ card.unit }}</span>
+                </div>
+              </div>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <!-- CHARTS ROW 2: Lever Indicators (Bed Occupancy + Staffing) -->
+        <v-row class="mb-6">
           <v-col cols="12" md="6">
             <v-card class="chart-card" elevation="1">
               <div class="pa-4">
-                <h3 class="text-h6 font-weight-bold mb-4">Wait Times</h3>
-                <Bar :key="`wt-${selectedMonth}`" :data="waitTimesChartData" :options="chartOptions" />
+                <h3 class="text-h6 font-weight-bold mb-4">Bed Occupancy Rates</h3>
+                <Bar :key="`bo-${selectedMonth}`" :data="bedOccupancyChartData" :options="chartOptions" />
               </div>
             </v-card>
           </v-col>
@@ -413,6 +500,31 @@ const metricCards = computed(() => {
               <div class="pa-4">
                 <h3 class="text-h6 font-weight-bold mb-4">Staffing Levels</h3>
                 <Bar :key="`sl-${selectedMonth}`" :data="staffingChartData" :options="chartOptions" />
+              </div>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <!-- SECTION 3: Strain Indicators -->
+        <v-row class="mb-2">
+          <v-col cols="12">
+            <h2 class="text-subtitle1 font-weight-bold text-grey mb-3">Strain Indicators</h2>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col
+            v-for="(card, index) in strainCards"
+            :key="`strain-${index}`"
+            cols="12"
+            sm="6"
+            md="4"
+          >
+            <v-card class="metric-card strain-card" elevation="1">
+              <div class="pa-4">
+                <div class="text-caption text-grey">{{ card.label }}</div>
+                <div class="text-h6 font-weight-bold mt-2">
+                  {{ card.value }}<span class="text-caption ml-1">{{ card.unit }}</span>
+                </div>
               </div>
             </v-card>
           </v-col>
@@ -466,6 +578,50 @@ const metricCards = computed(() => {
   min-height: 300px;
   display: flex;
   flex-direction: column;
+}
+
+/* Signal Cards - Demand & Stress (Red/Orange accent) */
+.metric-card.signal-card {
+  border-left-color: #FF6B6B;
+}
+
+.metric-card.signal-card:hover {
+  box-shadow: 0 8px 16px rgba(255, 107, 107, 0.2) !important;
+}
+
+/* Lever Cards - Capacity & Staffing (Cyan accent) */
+.metric-card.lever-card {
+  border-left-color: #4ECDC4;
+}
+
+.metric-card.lever-card:hover {
+  box-shadow: 0 8px 16px rgba(78, 205, 196, 0.2) !important;
+}
+
+/* Prominent Card - Staff-to-Patient Ratio */
+.metric-card.prominent-card {
+  background: linear-gradient(135deg, #1e1e1e 0%, #2a2a3e 100%);
+  border-left-color: #FFD93D;
+  border: 2px solid rgba(255, 217, 61, 0.4);
+  border-left: 6px solid #FFD93D;
+}
+
+.metric-card.prominent-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(255, 217, 61, 0.3) !important;
+}
+
+.lever-highlight {
+  color: #FFD93D;
+}
+
+/* Strain Cards - Warnings (Pink accent) */
+.metric-card.strain-card {
+  border-left-color: #F38181;
+}
+
+.metric-card.strain-card:hover {
+  box-shadow: 0 8px 16px rgba(243, 129, 129, 0.2) !important;
 }
 
 :deep(.v-select__content) {

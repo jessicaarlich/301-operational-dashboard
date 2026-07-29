@@ -1,6 +1,40 @@
 ## Operational Dashboard Plan
 A single analytics dashboard showing business metrics for Healthcare Hospital. This should be a simple analytics view. The primary audience for this is a department director who needs information to make important decisions.
 
+# Purpose & Audience
+**For:** A department director with hospital-wide authority over staffing decisions and budget responsibility
+
+**The job it does:** Enables the director to make real-time and strategic staffing decisions across the hospital by monitoring workload demand (Patient Volume) and system stress (Wait Times), using Bed Occupancy and Staffing Levels as context.
+
+**Scope of authority:** The director makes decisions about staffing levels and allocation across the entire hospital and all shifts, constrained by budget limits.
+
+# Decisions & Rationale
+
+**Why 12 months of data with "view all" aggregation:**
+- Individual month view supports immediate tactical decisions (this month's staffing needs)
+- Full-year aggregation reveals seasonal patterns and recurring trends, distinguishing them from noise
+- This allows the director to evaluate whether past staffing decisions worked over time and make smarter strategic choices
+
+**Why these four metric categories:**
+- **Patient Volume** and **Wait Times** are the leading indicators that signal when action is needed
+- **Bed Occupancy** and **Staffing Levels** are the levers and context—they show what resources are available and what decisions the director can make
+- Together, they create a clear signal hierarchy: watch demand and stress, then adjust your tools accordingly
+
+**Why a single-page dashboard:**
+- Keeps the director focused on the core job: staffing optimization
+- Reduces cognitive load by showing only what matters for this decision
+- Fast, scannable interface supports quick pattern recognition and monthly review cycles
+
+# Non-Goals
+This dashboard explicitly does **not** attempt to be:
+
+- A finance system (no revenue tracking, cost-per-patient, or budget forecasting)
+- A quality or safety scorecard (no mortality rates, infection rates, or regulatory metrics)
+- A detailed operational control panel (no shift-by-shift management, no real-time dispatch)
+- A data science lab (no predictive modeling, no complex statistical analysis, no exploration tools)
+
+Excluding these keeps the director's focus sharp and prevents scope creep.
+
 # Data
 Generate 12 months of realistic fake hospital data from January 2025 through December 2025. Return the data as a JSON file.
 
